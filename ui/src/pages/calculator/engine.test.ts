@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { CalculatorError, applyOperator, evaluate } from "./engine";
+import {
+  CalculatorError,
+  addMemory,
+  applyOperator,
+  clearMemory,
+  evaluate,
+  percentOf,
+  percentOfBase,
+  subtractMemory,
+  toggleSign,
+} from "./engine";
 
 describe("calculator arithmetic", () => {
   it("adds, subtracts, multiplies, and divides", () => {
@@ -32,5 +42,24 @@ describe("calculator arithmetic", () => {
     expect(() => evaluate("   ")).toThrowError(
       expect.objectContaining({ code: "invalid_expression" }),
     );
+  });
+});
+
+describe("calculator percent, sign, and memory", () => {
+  it("turns a value into a percent and a percent of a base", () => {
+    expect(percentOf(50)).toBe(0.5);
+    expect(percentOfBase(200, 10)).toBe(20);
+  });
+
+  it("flips the sign and keeps zero at zero", () => {
+    expect(toggleSign(12)).toBe(-12);
+    expect(toggleSign(-4.5)).toBe(4.5);
+    expect(toggleSign(0)).toBe(0);
+  });
+
+  it("clears, adds, and subtracts memory", () => {
+    expect(clearMemory()).toBe(0);
+    expect(addMemory(10, 2.5)).toBe(12.5);
+    expect(subtractMemory(10, 3)).toBe(7);
   });
 });

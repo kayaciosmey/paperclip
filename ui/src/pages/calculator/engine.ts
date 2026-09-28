@@ -33,6 +33,36 @@ export function applyOperator(left: number, operator: BinaryOperator, right: num
   return roundResult(left / right);
 }
 
+export function toggleSign(value: number): number {
+  if (value === 0) return 0;
+  return roundResult(-value);
+}
+
+/** Standalone percent: 50% is 0.5. Also used for multiply and divide. */
+export function percentOf(value: number): number {
+  return roundResult(value / 100);
+}
+
+/**
+ * Percent of a previous operand. `200 + 10%` contributes 20, and
+ * `200 - 10%` contributes 20.
+ */
+export function percentOfBase(base: number, value: number): number {
+  return roundResult(base * (value / 100));
+}
+
+export function clearMemory(): number {
+  return 0;
+}
+
+export function addMemory(memory: number, value: number): number {
+  return roundResult(memory + value);
+}
+
+export function subtractMemory(memory: number, value: number): number {
+  return roundResult(memory - value);
+}
+
 type Token =
   | { kind: "number"; value: number }
   | { kind: "operator"; operator: BinaryOperator };
