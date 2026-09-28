@@ -37,6 +37,7 @@ export function CalculatorPage() {
         expression={expressionText(state)}
         value={displayValue(state)}
         memoryActive={state.memory !== 0}
+        error={state.error}
       />
       <CalculatorKeypad onAction={dispatch} />
       <CalculatorHistory history={state.history} />
@@ -45,12 +46,18 @@ export function CalculatorPage() {
 }
 
 function CalculatorHistory({ history }: { history: HistoryEntry[] }) {
-  if (history.length === 0) return null;
+  if (history.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground" data-testid="calculator-history-empty">
+        No calculations yet
+      </p>
+    );
+  }
   const newestFirst = [...history].reverse();
   return (
     <ol className="flex flex-col gap-1 text-sm text-muted-foreground" data-testid="calculator-history">
-      {newestFirst.map((item) => (
-        <li key={`${item.expression}=${item.result}`} className="flex items-baseline justify-between gap-3 font-mono">
+      {newestFirst.map((item, index) => (
+        <li key={`${item.expression}=${item.result}:${index}`} className="flex items-baseline justify-between gap-3 font-mono">
           <span className="truncate">{item.expression}</span>
           <span className="text-foreground">{item.result}</span>
         </li>

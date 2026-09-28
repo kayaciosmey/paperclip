@@ -53,8 +53,21 @@ export function expressionText(state: CalculatorState): string {
   return `${state.expression}${state.entry}`;
 }
 
+function startsFresh(action: CalculatorAction): boolean {
+  return action.type === "digit" || action.type === "decimal" || (action.type === "paren" && action.paren === "(");
+}
+
 export function reduceCalculator(state: CalculatorState, action: CalculatorAction): CalculatorState {
-  if (state.error && action.type !== "allClear" && action.type !== "clear") {
+  if (state.error) {
+    if (startsFresh(action)) {
+      return reduceCalculator(
+        { ...createCalculatorState(), memory: state.memory, history: state.history },
+        action,
+      );
+    }
+    if (action.type === "allClear" || action.type === "clear" || action.type === "backspace") {
+      return { ...createCalculatorState(), memory: state.memory, history: state.history };
+    }
     return state;
   }
   switch (action.type) {

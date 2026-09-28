@@ -81,4 +81,19 @@ describe("calculator session", () => {
     expect(state.error).toBe("Cannot divide by zero");
     expect(displayValue(state)).toBe("Error");
   });
+
+  it("starts a new entry after an error", () => {
+    const failed = press([digit("1"), operator("/"), digit("0"), { type: "equals" }]);
+    const next = reduceCalculator(failed, digit("5"));
+    expect(next.error).toBeNull();
+    expect(displayValue(next)).toBe("5");
+    expect(next.history).toEqual([]);
+  });
+
+  it("leaves an empty calculation at zero", () => {
+    const state = reduceCalculator(createCalculatorState(), { type: "equals" });
+    expect(displayValue(state)).toBe("0");
+    expect(expressionText(state)).toBe("");
+    expect(state.history).toEqual([]);
+  });
 });
