@@ -20,6 +20,7 @@ import {
   MessagesSquare,
   GanttChartSquare,
   LayoutGrid,
+  Calculator,
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -152,6 +153,7 @@ export function Sidebar() {
               collapsed rail, where the old header icon was dropped entirely.
               Cmd/Ctrl+K remains the keyboard path (command palette). */}
           <SidebarNavItem to="/search" label="Search" icon={Search} />
+          <SidebarNavItem to="/calculator" label="Calculator" icon={Calculator} />
           <SidebarNavItem to="/dashboard" label="Dashboard" icon={LayoutDashboard} liveCount={liveRunCount} />
           <SidebarNavItem
             to="/inbox"
