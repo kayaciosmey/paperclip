@@ -63,10 +63,6 @@ export function subtractMemory(memory: number, value: number): number {
   return roundResult(memory - value);
 }
 
-type Token =
-  | { kind: "number"; value: number }
-  | { kind: "operator"; operator: BinaryOperator };
-
 function isDigit(char: string): boolean {
   return char >= "0" && char <= "9";
 }
@@ -99,50 +95,68 @@ function readNumber(source: string, index: number, signed: boolean): { value: nu
   return { value, next: cursor };
 }
 
-function tokenize(expression: string): Token[] {
-  const tokens: Token[] = [];
-  let index = 0;
-  while (index < expression.length) {
-    const expectNumber = tokens.length === 0 || tokens[tokens.length - 1]?.kind === "operator";
-    if (expectNumber) {
-      const signed = expression[index] === "-" && (tokens.length === 0 || tokens[tokens.length - 1]?.kind === "operator");
-      const parsed = readNumber(expression, index, signed);
-      if (parsed === null) {
-        throw new CalculatorError("invalid_expression", "Expression is invalid");
-      }
-      tokens.push({ kind: "number", value: parsed.value });
-      index = parsed.next;
-      continue;
-    }
-    const char = expression[index] ?? "";
-    if (!isBinaryOperator(char)) {
-      throw new CalculatorError("invalid_expression", "Expression is invalid");
-    }
-    tokens.push({ kind: "operator", operator: char });
-    index += 1;
-  }
-  return tokens;
+type Parser = { source: string; index: number };
+
+function peek(parser: Parser): string {
+  return parser.source[parser.index] ?? "";
 }
 
-/** Evaluate `+ - * /` from left to right. Precedence arrives in a later change. */
+function parseExpression(parser: Parser): number {
+  let value = parseTerm(parser);
+  while (peek(parser) === "+" || peek(parser) === "-") {
+    const operator = peek(parser) as "+" | "-";
+    parser.index += 1;
+    value = applyOperator(value, operator, parseTerm(parser));
+  }
+  return value;
+}
+
+function parseTerm(parser: Parser): number {
+  let value = parseUnary(parser);
+  while (peek(parser) === "*" || peek(parser) === "/") {
+    const operator = peek(parser) as "*" | "/";
+    parser.index += 1;
+    value = applyOperator(value, operator, parseUnary(parser));
+  }
+  return value;
+}
+
+function parseUnary(parser: Parser): number {
+  if (peek(parser) === "-") {
+    parser.index += 1;
+    return applyOperator(0, "-", parseUnary(parser));
+  }
+  return parsePrimary(parser);
+}
+
+function parsePrimary(parser: Parser): number {
+  if (peek(parser) === "(") {
+    parser.index += 1;
+    const value = parseExpression(parser);
+    if (peek(parser) !== ")") {
+      throw new CalculatorError("invalid_expression", "Missing closing parenthesis");
+    }
+    parser.index += 1;
+    return value;
+  }
+  const parsed = readNumber(parser.source, parser.index, false);
+  if (parsed === null) {
+    throw new CalculatorError("invalid_expression", "Expression is invalid");
+  }
+  parser.index = parsed.next;
+  return parsed.value;
+}
+
+/** Evaluate with operator precedence and parentheses. `*` and `/` bind tighter than `+` and `-`. */
 export function evaluate(expression: string): number {
   const source = expression.replace(/\s+/g, "");
   if (source.length === 0) {
     throw new CalculatorError("invalid_expression", "Expression is empty");
   }
-  const tokens = tokenize(source);
-  const first = tokens[0];
-  if (first?.kind !== "number") {
+  const parser: Parser = { source, index: 0 };
+  const result = parseExpression(parser);
+  if (parser.index !== source.length) {
     throw new CalculatorError("invalid_expression", "Expression is invalid");
-  }
-  let result = first.value;
-  for (let index = 1; index < tokens.length; index += 2) {
-    const operator = tokens[index];
-    const right = tokens[index + 1];
-    if (operator?.kind !== "operator" || right?.kind !== "number") {
-      throw new CalculatorError("invalid_expression", "Expression is invalid");
-    }
-    result = applyOperator(result, operator.operator, right.value);
   }
   return result;
 }

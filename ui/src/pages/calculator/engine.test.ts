@@ -45,6 +45,31 @@ describe("calculator arithmetic", () => {
   });
 });
 
+describe("calculator precedence and parentheses", () => {
+  it("multiplies and divides before adding and subtracting", () => {
+    expect(evaluate("2+3*4")).toBe(14);
+    expect(evaluate("20-6/2")).toBe(17);
+    expect(evaluate("8/2*2")).toBe(8);
+  });
+
+  it("evaluates parenthesized groups first", () => {
+    expect(evaluate("(2+3)*4")).toBe(20);
+    expect(evaluate("2*(3+4)")).toBe(14);
+    expect(evaluate("((1+2)*3)+4")).toBe(13);
+  });
+
+  it("accepts a leading minus and a minus after an operator", () => {
+    expect(evaluate("-3+5")).toBe(2);
+    expect(evaluate("2*-3")).toBe(-6);
+  });
+
+  it("rejects a missing closing parenthesis", () => {
+    expect(() => evaluate("(2+3")).toThrowError(
+      expect.objectContaining({ code: "invalid_expression" }),
+    );
+  });
+});
+
 describe("calculator percent, sign, and memory", () => {
   it("turns a value into a percent and a percent of a base", () => {
     expect(percentOf(50)).toBe(0.5);
